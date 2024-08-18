@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  database:
+    image: postgres:12-alpine
+    restart: always
+    container_name: database
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+      POSTGRES_DB: ${POSTGRESQL_DB}
+    ports:
+      - 5432:5432
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    restart: always
+    container_name: keycloak
+    # command: ["start", "--optimized"]
+    command: ["start-dev"]
+    volumes:
+      - ./certs:/etc/certs
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://database:5432/${POSTGRESQL_DB}
+      KC_DB_USER: ${POSTGRESQL_USER}
+      KC_DB_PASSWORD: ${POSTGRESQL_PASSWORD}
+      KC_DATABASE_NAME: ${POSTGRESQL_DB}
+
+      KC_HOSTNAME: localhost
+      # KC_HTTPS_PORT: 443
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTPS_CERTIFICATE_FILE: /etc/certs/tls.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/certs/tls.key
+      KC_HTTP_ENABLED: true
+
+    ports:
+      - 8443:8443
+      - 8080:8080
+    depends_on:
+      - database
+
+  web:
+    image: nginx
+    container_name: nginx-web-app
+    ports:
+      - 3000:80
+    environment:
+      - NGINX_HOST=localhost.co
+      - NGINX_PORT=80
