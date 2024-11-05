@@ -1,6 +1,6 @@
 const queryString = require("query-string");
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ path: ".env.local" });
 
 const stringifyParams = queryString.stringify({
   client_id: process.env.KEYCLOAK_CLIENT,

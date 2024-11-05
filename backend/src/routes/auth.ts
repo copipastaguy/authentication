@@ -14,10 +14,9 @@ v1authRouter.get("/authorize", async (req: Request, res: Response) => {
       }
   */
 
-  logger.info(`User ${req.body.username} requesting token from keycloak`);
   // authenticate with Keycloak server with authorization code flow
   logger.info(`Redirecting user to ${process.env.KEYCLOAK_SERVICE}/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth?${stringifyParams}`);
-  res.redirect(`${process.env.KEYCLOAK_SERVICE}/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth?${stringifyParams}`);
+  res.send(`${process.env.KEYCLOAK_SERVICE}/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/auth?${stringifyParams}`);
 });
 
 // v1/oauth/token
@@ -49,8 +48,8 @@ v1authRouter.post("/token", async (req: Request<{}, {}, { code: string }>, res: 
       );
 
       if (response.status === 200) {
-        res.cookie("ACCESS_TOKEN", response.data.access_token, { httpOnly: true });
-        res.cookie("REFRESH_TOKEN", response.data.refresh_token, { httpOnly: true });
+        res.cookie("access_token", response.data.access_token, { httpOnly: true });
+        res.cookie("refresh_token", response.data.refresh_token, { httpOnly: true });
         res.send({ access_token: response.data.access_token, refresh_token: response.data.refresh_token });
       }
     } catch (error: any) {
